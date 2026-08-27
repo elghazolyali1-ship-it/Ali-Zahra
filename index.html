@@ -6231,7 +6231,7 @@
                                     <div class="t702__title t-title t-title_xxs" id="popuptitle_2487446233" dir="rtl">تأكيد الحضور</div>
                                     <div class="t702__descr t-descr t-descr_xs" dir="rtl">يرجى تأكيد الحضور قبل 9 أغسطس</div>
                                 </div>
-                                <form id="form2487446233" name='form2487446233' role="form" action='' method='POST' data-formactiontype="0" data-inputbox=".t-input-group" class="t-form js-form-proccess t-form_inputs-total_5 " data-success-callback="t702_onSuccess">
+                                <form id="form2487446233" name='form2487446233' role="form" action='' method='POST' data-formactiontype="0" data-inputbox=".t-input-group" class="t-form t-form_inputs-total_5 ">
                                     <!-- NO ONE SERVICES CONNECTED -->
                                     <!-- @classes t-title t-text t-btn -->
                                     <div class="js-successbox t-form__successbox t-text t-text_md" aria-live="polite" style="display:none;"></div>
@@ -6446,13 +6446,16 @@ t-form__inputsbox_vertical-form t-form__inputsbox_inrow
                                     </div>
                                 </form>
                                 <script>
-                                    window.t702_onSuccess = function() {
-                                        try {
-                                            var form = document.getElementById('form2487446233');
-                                            var getVal = function(name) {
-                                                var el = form.querySelector('[name="' + name + '"]:checked') || form.querySelector('[name="' + name + '"]');
-                                                return el ? el.value : '';
-                                            };
+                                    (function() {
+                                        var form = document.getElementById('form2487446233');
+                                        if (!form) return;
+
+                                        var getVal = function(name) {
+                                            var el = form.querySelector('[name="' + name + '"]:checked') || form.querySelector('[name="' + name + '"]');
+                                            return el ? el.value : '';
+                                        };
+
+                                        var buildWaUrl = function() {
                                             var name = getVal('Your name');
                                             var attending = getVal('Will you be attending?');
                                             var guests = getVal('Number of Guests Attending');
@@ -6464,14 +6467,42 @@ t-form__inputsbox_vertical-form t-form__inputsbox_inrow
                                                 "عدد الضيوف: " + guests + "\n" +
                                                 "اغنية: " + song + "\n" +
                                                 "الأطفال الحاضرون: " + children;
-                                            var waUrl = "https://wa.me/201044280815?text=" + encodeURIComponent(msg);
-                                            setTimeout(function() {
-                                                window.location.href = waUrl;
-                                            }, 600);
-                                        } catch (e) {
-                                            console.log(e);
-                                        }
-                                    };
+                                            return "https://wa.me/201044280815?text=" + encodeURIComponent(msg);
+                                        };
+
+                                        var showError = function(msg) {
+                                            var box = form.querySelector('.js-errorbox-all');
+                                            if (box) {
+                                                box.style.display = 'block';
+                                                var li = box.querySelector('.js-rule-error-all');
+                                                if (li) li.textContent = msg;
+                                            } else {
+                                                alert(msg);
+                                            }
+                                        };
+                                        var hideError = function() {
+                                            var boxes = form.querySelectorAll('.js-errorbox-all');
+                                            boxes.forEach(function(b) { b.style.display = 'none'; });
+                                        };
+
+                                        // Tilda's own AJAX/captcha pipeline has been fully disabled for this
+                                        // form (no "js-form-proccess" class), so this is the ONLY handler.
+                                        // It works fully offline / opened locally via file://.
+                                        form.addEventListener('submit', function(e) {
+                                            e.preventDefault();
+
+                                            var nameVal = getVal('Your name').trim();
+                                            var attendingVal = getVal('Will you be attending?');
+
+                                            if (!nameVal || !attendingVal) {
+                                                showError('من فضلك اكتب اسمك واختر هل ستحضر أم لا.');
+                                                return;
+                                            }
+
+                                            hideError();
+                                            window.location.href = buildWaUrl();
+                                        });
+                                    })();
                                 </script>
                                 <style>
                                     #rec2487446233 input::-webkit-input-placeholder {
